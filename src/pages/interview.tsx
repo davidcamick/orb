@@ -13,6 +13,7 @@ export default function Interview() {
   const [isCallActive, setIsCallActive] = useState(false);
   const [isAgentSpeaking, setIsAgentSpeaking] = useState(false);
   const [agentTranscript, setAgentTranscript] = useState('');
+  const [showDevMenu, setShowDevMenu] = useState(false);
 
   useEffect(() => {
     if (!isCallActive) return;
@@ -92,6 +93,7 @@ export default function Interview() {
 
       console.log('Call started successfully:', call);
       setIsCallActive(true);
+      setAgentTranscript("Hello! I'm ready to chat. Click me to end the call.");
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An error occurred';
       setError(errorMessage);
@@ -104,138 +106,149 @@ export default function Interview() {
   const handleEndCall = () => {
     retellClient.stopCall();
     setIsCallActive(false);
+    setIsAgentSpeaking(false);
+    setAgentTranscript('');
   };
+
+  const toggleCall = () => {
+    if (isCallActive) {
+      handleEndCall();
+    } else {
+      handleStartInterview();
+    }
+  };
+
+  const statusText = !isCallActive 
+    ? (isLoading ? "Connecting..." : "") 
+    : (isAgentSpeaking ? "" : "Listening...");
 
   return (
     <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-black text-white">
-      {/* Bluish hazy gradient background */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[500px] w-[500px] rounded-full bg-blue-600/20 blur-[100px]" />
-
-      {isCallActive ? (
-        // Active Call Screen
-        <div className="relative z-10 w-full h-screen flex flex-col items-center justify-center px-4">
-          <div className="flex flex-col items-center gap-6 flex-1 justify-center">
-            <h1 className="text-5xl font-bold tracking-tight text-white md:text-6xl">
-              Call Active
-            </h1>
-            
-            {/* Green Status Indicator */}
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <div className="w-6 h-6 bg-green-500 rounded-full animate-pulse" />
-                <div className="absolute inset-0 w-6 h-6 bg-green-500 rounded-full animate-ping opacity-75" />
-              </div>
-              <span className="text-lg font-medium text-green-400">
-                Connected
-              </span>
-            </div>
-
-            {/* Agent Speaking Indicator */}
-            <div className="mt-4 flex flex-col items-center gap-2">
-              <div className="text-sm font-medium text-gray-400">
-                AI Agent Status
-              </div>
-              <div className="flex items-center gap-3 px-6 py-3 rounded-full border-2" style={{
-                borderColor: isAgentSpeaking ? '#ef4444' : '#22c55e',
-                backgroundColor: isAgentSpeaking ? 'rgba(239, 68, 68, 0.1)' : 'rgba(34, 197, 94, 0.1)',
-              }}>
-                <div className="relative">
-                  <div 
-                    className="w-5 h-5 rounded-full animate-pulse"
-                    style={{
-                      backgroundColor: isAgentSpeaking ? '#ef4444' : '#22c55e',
-                    }}
-                  />
-                  {isAgentSpeaking && (
-                    <div 
-                      className="absolute inset-0 w-5 h-5 rounded-full animate-ping opacity-75"
-                      style={{
-                        backgroundColor: '#ef4444',
-                      }}
-                    />
-                  )}
-                </div>
-                <span 
-                  className="text-lg font-semibold"
-                  style={{
-                    color: isAgentSpeaking ? '#ef4444' : '#22c55e',
-                  }}
-                >
-                  {isAgentSpeaking ? 'Speaking' : 'Listening'}
-                </span>
-              </div>
-            </div>
-
-            <p className="text-xl text-gray-300 leading-relaxed">
-              Your interview is now in progress. Please listen carefully to the questions and respond naturally.
-            </p>
-          </div>
-
-          {/* Transcript Display - Movie Subtitle Style */}
-          <div className="w-full max-w-4xl mb-8">
-            {agentTranscript && (
-              <div className="bg-black/80 backdrop-blur-sm rounded-lg px-8 py-6 border border-blue-500/30">
-                <p className="text-center text-lg leading-relaxed text-white font-medium">
-                  {agentTranscript}
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* End Call Button */}
-          <div className="mb-8">
-            <button 
-              onClick={handleEndCall}
-              className="group relative overflow-hidden rounded-full border border-red-500/50 bg-red-500/10 px-10 py-4 transition-all duration-300 hover:border-red-500 hover:bg-red-500/20 hover:shadow-[0_0_20px_rgba(239,68,68,0.5)]"
-            >
-              <span className="relative z-10 text-lg font-medium text-red-400">
-                End Call
-              </span>
-              <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-red-500/10 to-transparent transition-transform duration-1000 group-hover:translate-x-full" />
-            </button>
-          </div>
-        </div>
-      ) : (
-        // Pre-Call Screen
-        <div className="relative z-10 flex flex-col items-center gap-10 max-w-2xl px-4 text-center">
-          <h1 className="text-6xl font-bold tracking-tight text-white md:text-7xl">
-            Your Future Awaits
-          </h1>
+      {/* Background Ambience */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-purple-900/20 via-black to-black" />
+      
+      <div className="z-10 flex flex-col items-center justify-center orb-container w-full max-w-4xl px-4">
+        
+        {/* The Interaction Orb */}
+        <div className="relative group cursor-pointer" onClick={toggleCall} role="button" tabIndex={0}>
+          {/* Outer glow rings */}
+          <div className={`absolute inset-0 rounded-full blur-[60px] transition-all duration-500
+            ${isCallActive 
+              ? (isAgentSpeaking ? 'bg-fuchsia-600/40 scale-150' : 'bg-blue-600/30 scale-125') 
+              : 'bg-purple-600/20 scale-100 group-hover:bg-purple-600/30 group-hover:scale-110'
+            }`} 
+          />
           
-          <p className="text-xl text-gray-300 leading-relaxed">
-            Welcome to your personalized interview experience. Let's discover what the future holds for you through insightful questions and meaningful conversation.
-          </p>
-
-          <div className="flex flex-col gap-4 mt-8">
-            <button 
-              onClick={handleStartInterview}
-              disabled={isLoading}
-              className="group relative overflow-hidden rounded-full border border-white/10 bg-white/5 px-10 py-4 transition-all duration-300 hover:border-white/20 hover:bg-white/10 hover:shadow-[0_0_20px_rgba(59,130,246,0.5)] disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <span className="relative z-10 text-lg font-medium text-white">
-                {isLoading ? 'Starting Interview...' : 'Start Interview'}
-              </span>
-              <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-1000 group-hover:translate-x-full" />
-            </button>
-
-            {error && (
-              <div className="rounded-lg bg-red-500/20 border border-red-500/50 px-4 py-3 text-red-200 text-sm">
-                {error}
-              </div>
-            )}
-
-            <button 
-              onClick={() => router.back()}
-              className="group relative overflow-hidden rounded-full border border-white/10 bg-white/5 px-10 py-4 transition-all duration-300 hover:border-white/20 hover:bg-white/10 hover:shadow-[0_0_20px_rgba(59,130,246,0.5)]"
-            >
-              <span className="relative z-10 text-lg font-medium text-white">
-                Go Back
-              </span>
-              <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-1000 group-hover:translate-x-full" />
-            </button>
+          {/* Main Orb */}
+          <div className={`w-64 h-64 md:w-80 md:h-80 rounded-full flex items-center justify-center relative overflow-hidden transition-all duration-300
+            orb
+            ${!isCallActive ? 'orb-idle' : ''}
+            ${isCallActive && !isAgentSpeaking ? 'orb-active-listening' : ''}
+            ${isCallActive && isAgentSpeaking ? 'orb-speaking' : ''}
+          `}>
+             {/* Audio Visualizer - Shows when speaking */}
+             {isCallActive && isAgentSpeaking && (
+               <div className="relative z-10 flex items-end gap-1.5 h-12">
+                 <div className="w-1 bg-white/90 rounded-full audio-bar" style={{ animationDelay: '0s' }} />
+                 <div className="w-1 bg-white/90 rounded-full audio-bar" style={{ animationDelay: '0.1s' }} />
+                 <div className="w-1 bg-white/90 rounded-full audio-bar" style={{ animationDelay: '0.2s' }} />
+                 <div className="w-1 bg-white/90 rounded-full audio-bar" style={{ animationDelay: '0.15s' }} />
+                 <div className="w-1 bg-white/90 rounded-full audio-bar" style={{ animationDelay: '0.05s' }} />
+               </div>
+             )}
+             
+             {/* Center Status Text (Optional, minimal) */}
+             {(!isCallActive || isLoading) && (
+               <div className="relative z-10 flex flex-col items-center gap-2 pointer-events-none">
+                 <span className="font-bold text-lg tracking-widest uppercase text-white/80">
+                   {isLoading ? 'Loading...' : 'Start'}
+                 </span>
+                 {!isLoading && (
+                   <span className="text-sm text-white/60 font-light">
+                     Tap the Orb to Speak
+                   </span>
+                 )}
+               </div>
+             )}
           </div>
         </div>
-      )}
+
+        {/* Status Indicator Text */}
+        <div className="absolute bottom-32 left-1/2 transform -translate-x-1/2 text-center space-y-2">
+            <p className="text-xl md:text-2xl font-light tracking-wide text-gray-300 transition-all">
+                {statusText}
+            </p>
+            {error && (
+                <p className="text-red-400 text-sm">{error}</p>
+            )}
+        </div>
+
+        {/* Transcript Area - Floating Movie Subtitles style */}
+        <div className={`absolute bottom-20 left-1/2 transform -translate-x-1/2 w-full px-4 transition-all duration-500 flex justify-center 
+            ${isCallActive ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+            {agentTranscript && (
+                <div className="backdrop-blur-md bg-black/40 border border-white/10 rounded-2xl p-6 md:p-8 max-w-2xl w-full text-center shadow-2xl">
+                    <p className="text-lg md:text-2xl text-white/90 font-medium leading-relaxed font-sans">
+                        "{agentTranscript}"
+                    </p>
+                </div>
+            )}
+        </div>
+      </div>
+
+      {/* Dev Menu Button - Outside main container */}
+      <div className="fixed bottom-4 right-4 z-50">
+        <button 
+            onClick={() => setShowDevMenu(!showDevMenu)}
+            className="bg-gray-800 text-white p-2 rounded-full hover:bg-gray-700 transition"
+        >
+            🐞
+        </button>
+        
+        {showDevMenu && (
+            <div className="absolute bottom-12 right-0 bg-gray-900 border border-gray-700 p-4 rounded-lg shadow-xl w-64 flex flex-col gap-2">
+                <h3 className="text-sm font-bold text-gray-400 mb-2">Dev Controls</h3>
+                
+                <div className="grid grid-cols-2 gap-2">
+                    <button 
+                        onClick={() => setIsCallActive(!isCallActive)}
+                        className={`text-xs p-2 rounded ${isCallActive ? 'bg-green-600' : 'bg-gray-700'}`}
+                    >
+                        Toggle Call
+                    </button>
+                    
+                     <button 
+                        onClick={() => setIsAgentSpeaking(!isAgentSpeaking)}
+                        disabled={!isCallActive}
+                        className={`text-xs p-2 rounded ${isAgentSpeaking ? 'bg-red-600' : 'bg-gray-700'} disabled:opacity-50`}
+                    >
+                        Toggle Speaking
+                    </button>
+                </div>
+
+                <button 
+                    onClick={() => setAgentTranscript("This is a simulated message from the orb entity. It is testing the subtitle system.")}
+                     className="text-xs p-2 rounded bg-blue-900 hover:bg-blue-800 text-left"
+                >
+                    Simulate Text Long
+                </button>
+                
+                 <button 
+                    onClick={() => setAgentTranscript("Hello there.")}
+                     className="text-xs p-2 rounded bg-blue-900 hover:bg-blue-800 text-left"
+                >
+                    Simulate Text Short
+                </button>
+                
+                <button 
+                    onClick={() => setAgentTranscript("")}
+                     className="text-xs p-2 rounded bg-gray-700 hover:bg-gray-600 text-left"
+                >
+                    Clear Text
+                </button>
+            </div>
+        )}
+      </div>
     </main>
   );
 }
