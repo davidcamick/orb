@@ -120,7 +120,7 @@ export default function Interview() {
 
   const statusText = !isCallActive 
     ? (isLoading ? "Connecting..." : "") 
-    : (isAgentSpeaking ? "" : "Listening...");
+    : "";
 
   return (
     <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-black text-white">
