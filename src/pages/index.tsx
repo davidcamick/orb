@@ -1,4 +1,14 @@
+'use client';
+
+import { useRouter } from 'next/router';
+
 export default function Home() {
+  const router = useRouter();
+
+  const handleDiscoverFuture = () => {
+    router.push('/interview');
+  };
+
   return (
     <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-black text-white">
       {/* Bluish hazy gradient background */}
@@ -10,7 +20,7 @@ export default function Home() {
           Welcome to Orb
         </h1>
         
-        <button className="group relative overflow-hidden rounded-full border border-white/10 bg-white/5 px-10 py-4 transition-all duration-300 hover:border-white/20 hover:bg-white/10 hover:shadow-[0_0_20px_rgba(59,130,246,0.5)]">
+        <button onClick={handleDiscoverFuture} className="group relative overflow-hidden rounded-full border border-white/10 bg-white/5 px-10 py-4 transition-all duration-300 hover:border-white/20 hover:bg-white/10 hover:shadow-[0_0_20px_rgba(59,130,246,0.5)]">
           <span className="relative z-10 text-lg font-medium text-white">
             Discover your future
           </span>
