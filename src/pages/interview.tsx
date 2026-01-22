@@ -12,6 +12,7 @@ export default function Interview() {
   const [error, setError] = useState<string | null>(null);
   const [isCallActive, setIsCallActive] = useState(false);
   const [isAgentSpeaking, setIsAgentSpeaking] = useState(false);
+  const [agentTranscript, setAgentTranscript] = useState('');
 
   useEffect(() => {
     if (!isCallActive) return;
@@ -27,12 +28,31 @@ export default function Interview() {
       setIsAgentSpeaking(false);
     };
 
+    // Listen for agent message updates
+    const handleAgentMessage = (message: any) => {
+      console.log('Agent message:', message);
+      
+      // Extract agent message from transcript array
+      if (message.transcript && Array.isArray(message.transcript)) {
+        // Find the most recent agent message
+        const agentMessages = message.transcript
+          .filter((msg: any) => msg.role === 'agent')
+          .map((msg: any) => msg.content)
+          .join('');
+        
+        console.log('Extracted agent text:', agentMessages);
+        setAgentTranscript(agentMessages);
+      }
+    };
+
     retellClient.on('agent_start_talking', handleAgentStartSpeaking);
     retellClient.on('agent_stop_talking', handleAgentStopSpeaking);
+    retellClient.on('update', handleAgentMessage);
 
     return () => {
       retellClient.off('agent_start_talking', handleAgentStartSpeaking);
       retellClient.off('agent_stop_talking', handleAgentStopSpeaking);
+      retellClient.off('update', handleAgentMessage);
     };
   }, [isCallActive]);
 
@@ -93,8 +113,8 @@ export default function Interview() {
 
       {isCallActive ? (
         // Active Call Screen
-        <div className="relative z-10 flex flex-col items-center gap-10 max-w-2xl px-4 text-center">
-          <div className="flex flex-col items-center gap-6">
+        <div className="relative z-10 w-full h-screen flex flex-col items-center justify-center px-4">
+          <div className="flex flex-col items-center gap-6 flex-1 justify-center">
             <h1 className="text-5xl font-bold tracking-tight text-white md:text-6xl">
               Call Active
             </h1>
@@ -145,21 +165,35 @@ export default function Interview() {
                 </span>
               </div>
             </div>
+
+            <p className="text-xl text-gray-300 leading-relaxed">
+              Your interview is now in progress. Please listen carefully to the questions and respond naturally.
+            </p>
           </div>
 
-          <p className="text-xl text-gray-300 leading-relaxed">
-            Your interview is now in progress. Please listen carefully to the questions and respond naturally.
-          </p>
+          {/* Transcript Display - Movie Subtitle Style */}
+          <div className="w-full max-w-4xl mb-8">
+            {agentTranscript && (
+              <div className="bg-black/80 backdrop-blur-sm rounded-lg px-8 py-6 border border-blue-500/30">
+                <p className="text-center text-lg leading-relaxed text-white font-medium">
+                  {agentTranscript}
+                </p>
+              </div>
+            )}
+          </div>
 
-          <button 
-            onClick={handleEndCall}
-            className="group relative overflow-hidden rounded-full border border-red-500/50 bg-red-500/10 px-10 py-4 transition-all duration-300 hover:border-red-500 hover:bg-red-500/20 hover:shadow-[0_0_20px_rgba(239,68,68,0.5)]"
-          >
-            <span className="relative z-10 text-lg font-medium text-red-400">
-              End Call
-            </span>
-            <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-red-500/10 to-transparent transition-transform duration-1000 group-hover:translate-x-full" />
-          </button>
+          {/* End Call Button */}
+          <div className="mb-8">
+            <button 
+              onClick={handleEndCall}
+              className="group relative overflow-hidden rounded-full border border-red-500/50 bg-red-500/10 px-10 py-4 transition-all duration-300 hover:border-red-500 hover:bg-red-500/20 hover:shadow-[0_0_20px_rgba(239,68,68,0.5)]"
+            >
+              <span className="relative z-10 text-lg font-medium text-red-400">
+                End Call
+              </span>
+              <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-red-500/10 to-transparent transition-transform duration-1000 group-hover:translate-x-full" />
+            </button>
+          </div>
         </div>
       ) : (
         // Pre-Call Screen
