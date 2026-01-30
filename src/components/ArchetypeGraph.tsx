@@ -118,6 +118,16 @@ export default function ArchetypeGraph({ className }: ArchetypeGraphProps) {
   const center = 150; // Internal coordinate system center
   const totalPoints = 8;
   
+  // Calculate ranks for animation order (highest score first)
+  // map index -> animation sequence rank (0 = first/highest score, 1 = second...)
+  const animationRanks = dummyScores
+      .map((score, index) => ({ score, index }))
+      .sort((a, b) => b.score - a.score)
+      .reduce((acc, item, rank) => {
+          acc[item.index] = rank;
+          return acc;
+      }, new Array(dummyScores.length).fill(0));
+
   // Helper to calculate individual point progress
   const getPointScale = (index: number) => {
     // These constants should align with the total duration in useEffect
@@ -128,7 +138,9 @@ export default function ArchetypeGraph({ className }: ArchetypeGraphProps) {
     // Scale graphProgress (0-1) back to milliseconds (approximate for render)
     const currentTime = graphProgress * totalDuration;
     
-    const start = index * stagger;
+    // Use the score-based rank for stagger delay instead of geometric index
+    const start = animationRanks[index] * stagger;
+    
     const p = Math.min(Math.max((currentTime - start) / pointDuration, 0), 1);
     
     // Use the smooth easing
